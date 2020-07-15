@@ -48,3 +48,20 @@ html_table(tab[[2]], fill=TRUE)
 html_table(tab[[3]], fill=TRUE)
 html_table(tab[[4]], fill=TRUE)
 head(html_table(tab[[5]], fill=TRUE))
+
+
+# 3.3 String Processing Part 3
+library(rvest)
+library(tidyverse)
+library(stringr)
+url <- "https://en.wikipedia.org/w/index.php?title=Opinion_polling_for_the_United_Kingdom_European_Union_membership_referendum&oldid=896735054"
+tab <- read_html(url) %>% html_nodes("table")
+polls <- tab[[5]] %>% html_table(fill = TRUE)
+names <- c("dates", "remain", "leave", "undecided", "lead", "samplesize", "pollster", "poll_type", "notes")
+polls <- polls %>% setNames(names) %>% .[-1,]
+head(polls)
+index <- str_detect(polls$remain, "%")
+sum(index)
+which(!index)
+polls_1 <- polls %>% .[-c(16, 75, 82, 111),]
+str_detect(polls_1$remain, "%")
