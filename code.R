@@ -65,3 +65,77 @@ sum(index)
 which(!index)
 polls_1 <- polls %>% .[-c(16, 75, 82, 111),]
 str_detect(polls_1$remain, "%")
+
+
+# 4.1 Dates, Times and Text Mining Part 1
+library(tidyverse)
+library(lubridate)
+library(dslabs)
+data(brexit_polls)
+head(brexit_polls)
+brexit_polls %>% filter(month(startdate)==4) %>% 
+  nrow()
+brexit_polls %>% mutate(endweek = round_date(enddate, unit="week")) %>% 
+  count(endweek) %>% 
+  arrange(desc(endweek))
+brexit_polls %>% mutate(endweek = round_date(enddate, unit="week")) %>% 
+  count(endweek) %>% 
+  mutate(endweek = weekdays(endweek)) %>% 
+  arrange(desc(n))
+
+data(movielens)
+movielens %>% mutate(timestamp = as_datetime(timestamp), reviewyear = year(timestamp)) %>%
+  group_by(reviewyear) %>%
+  count(reviewyear) %>%
+  arrange(desc(n))
+
+movielens %>% mutate(timestamp = as_datetime(timestamp), hour = hour(timestamp)) %>%
+  group_by(hour) %>%
+  count(hour) %>%
+  arrange(desc(n))
+
+
+#Part 2
+library(tidyverse)
+library(gutenbergr)
+library(tidytext)
+library(textdata)
+options(digits = 3)
+gutenberg_metadata <- gutenberg_metadata %>% .[-1,]
+prideandprej <- str_detect(gutenberg_metadata$title, "Pride and Prejudice")
+sum(prideandprej, na.rm=TRUE)
+which(prideandprej)
+gutenberg_metadata_1 <- gutenberg_metadata[c(1342,20686,20687,26301,37431,42671),]
+gutenberg_metadata_1
+
+gutenbergworks <- gutenberg_works()
+prideandprej_1 <- str_detect(gutenbergworks$title, "Pride and Prejudice")
+sum(prideandprej_1, na.rm=TRUE)
+which(prideandprej_1)
+gutenbergworks_1 <- gutenbergworks[c(1164,29493),]
+gutenbergworks_1
+
+prideandprej_text <- gutenberg_download(1342)
+words <- prideandprej_text %>% unnest_tokens(word,text)
+nrow(words)
+
+words <- prideandprej_text %>% unnest_tokens(word,text) %>% filter(!word %in% stop_words$word)
+nrow(words)
+
+digits <- str_detect(words$word, "\\d+")
+x <- which(digits)
+words <- words %>% .[-c(x),]
+nrow(words)
+
+words %>% count(word) %>% filter(n > 100) %>% nrow()
+words %>% count(word) %>% arrange(desc(n))
+
+afinn <- get_sentiments("afinn")
+1
+afinn_sentiments <- words %>% inner_join(afinn, by = "word") %>%
+  select(word, value)
+nrow(afinn_sentiments)
+afinn_sentiments_pos <- afinn_sentiments %>% filter(value>0)
+nrow(afinn_sentiments_pos)/nrow(afinn_sentiments)
+afinn_sentiments %>% filter(value==4) %>% nrow()
+
